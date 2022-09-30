@@ -1,0 +1,56 @@
+@startuml
+box certificate microservice
+participant Certificates as Cert
+collections Storage
+end box 
+
+box "web microservice" #LightBlue
+participant Web as Web
+database    Database  as DB
+end box 
+
+Web -->  DB: get course
+DB -->  Web: course data  
+Web -->  DB: get finishers
+DB -->  Web: course users
+
+loop count(students)
+   alt#Gold #LightBlue HTTP
+      Web -> Cert: HTTP GET /certificate {course, student, templateName}
+   else #LightBlue gRPC
+      Web -> Cert: rpc certificate_issue {course, student, templateName}
+   end
+   group Certificate internal 
+    alt#Gold #LightGreen select template
+    Cert --> Cert: Запрос удовлетворен
+else #Pink Error
+    Cert ->x Cert: Запрос отклонен
+end
+    alt#Gold #LightGreen print certificate
+    Cert --> Cert: Запрос удовлетворен
+else #Pink Error
+    Cert ->x Cert: Запрос отклонен
+end
+     alt#Gold #LightGreen generate name
+    Cert --> Cert: Запрос удовлетворен
+else #Pink Error
+    Cert ->x Cert: Запрос отклонен
+end
+     alt#Gold #LightGreen save file
+    Cert --> Storage: Запрос удовлетворен
+else #Pink Error
+    Cert ->x Storage: Запрос отклонен
+end
+   end
+alt#Gold #LightBlue HTTP 200 OK certificate_url
+    Cert --> Web: Запрос удовлетворен
+else #Pink HTTP error_code certificate_url
+    Cert --> Web: Запрос отклонен
+else #LightBlue gRPC
+    Cert --> Web: Запрос удовлетворен
+else #Pink gRPC GRPC_STATUS_CANCELLED
+    Cert --> Web: Запрос отклонен
+end
+  
+end
+@enduml
