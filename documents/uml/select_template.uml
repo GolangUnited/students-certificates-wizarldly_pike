@@ -1,0 +1,11 @@
+@startuml
+box certificate microservice
+participant Certificates as Cert
+end box 
+   group Certificate internal 
+    alt#Gold #LightGreen select template {templateName}
+    Cert --> Cert: Request completed
+else #Pink Error
+    Cert ->x Cert: Request rejected
+end
+@enduml
