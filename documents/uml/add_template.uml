@@ -1,0 +1,23 @@
+@startuml
+title Add template to templates storage
+
+box Certificate Microservice
+collections Storage as str
+participant Certificates as crt
+end box 
+
+box "Web Microservice" #LightBlue
+participant Web as web
+end box 
+
+alt#Gold #LightBlue HTTP
+    web -> crt: HTTP POST /template {template}
+else #Pink gRPC
+    web -> crt: rpc certificate_template {template}
+end
+
+group Certificate internal 
+  str <-- crt : save template
+end
+crt --> web: HTTP 200 OK
+@enduml

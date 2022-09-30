@@ -1,0 +1,26 @@
+@startuml
+title Generate new certificate
+
+box Certificate Microservice
+collections Storage as str
+participant Certificates as crt
+end box 
+
+box "Web Microservice" #LightBlue
+participant Web as web
+end box 
+
+alt#Gold #LightBlue HTTP
+    web -> crt: HTTP POST /certificate {course, student, templateName}
+else #Pink gRPC
+    web -> crt: rpc certificate_issue {course, student, templateName}
+end
+
+group Certificate internal 
+  crt <--> str: select template
+  crt --> crt : generate certificate
+  crt --> crt : generate ID/name
+  crt --> str: save file
+end
+crt --> web: HTTP 200 OK certificate_ID
+@enduml

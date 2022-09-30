@@ -1,0 +1,23 @@
+@startuml
+title Get certificate file by ID
+
+box Certificate Microservice
+collections Storage as str
+participant Certificates as crt
+end box 
+
+box "Web Microservice" #LightBlue
+participant Web as web
+end box 
+
+alt#Gold #LightBlue HTTP
+    web -> crt: HTTP GET /file {ID}
+else #Pink gRPC
+    web -> crt: rpc certificate_file {ID}
+end
+
+group Certificate internal 
+  str <--> crt : find by ID
+end
+crt --> web: HTTP 200 OK certificate_[]byte
+@enduml
