@@ -1,7 +1,7 @@
 @startuml
 box certificate microservice
-participant Certificates as Cert
 collections Storage
+participant Certificates as Cert
 end box 
 
 box "web microservice" #LightBlue
