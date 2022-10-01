@@ -17,33 +17,21 @@ loop count(students)
    group Certificate internal 
     alt#Gold #LightGreen select template
     Cert --> Storage: Запрос удовлетворен
-else #Pink Error
-    Cert ->x Storage: Запрос отклонен
 end
     alt#Gold #LightGreen generate certificate
     Cert --> Cert: Запрос удовлетворен
-else #Pink Error
-    Cert ->x Cert: Запрос отклонен
 end
      alt#Gold #LightGreen generate name(id)
     Cert --> Cert: Запрос удовлетворен
-else #Pink Error
-    Cert ->x Cert: Запрос отклонен
 end
      alt#Gold #LightGreen save file
     Cert --> Storage: Запрос удовлетворен
-else #Pink Error
-    Cert ->x Storage: Запрос отклонен
 end
    end
 alt#Gold #LightBlue HTTP 200 OK certificate_url
     Cert --> Web: Запрос удовлетворен
-else #Pink HTTP error_code certificate_url
-    Cert --> Web: Запрос отклонен
 else #LightBlue gRPC
     Cert --> Web: Запрос удовлетворен
-else #Pink gRPC GRPC_STATUS_CANCELLED
-    Cert --> Web: Запрос отклонен
 end
 
 end
