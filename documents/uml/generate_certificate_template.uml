@@ -1,0 +1,13 @@
+@startuml
+start
+
+if (generate certificate) then (failed)
+:return error to web;
+
+else (succeed)
+:next steps...;
+
+endif
+
+stop
+@enduml

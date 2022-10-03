@@ -1,0 +1,13 @@
+@startuml
+start
+
+if (Save file to storage) then (failed)
+:return error to web;
+
+else (succeed)
+:return 200 to web;
+
+endif
+
+stop
+@enduml
