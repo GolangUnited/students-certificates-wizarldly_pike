@@ -1,0 +1,19 @@
+@startuml
+box certificate microservice
+group Certificate internal 
+
+alt#Gold #LightGreen 
+certificate <-- Web: gRPC Request 
+end
+
+alt#Gold #LightGreen 
+certificate --> certificate : generate certificate
+end
+
+alt#Gold #LightGreen 
+certificate --> Web: gRPC Response
+end
+
+end box
+participant Web as Web
+@enduml
