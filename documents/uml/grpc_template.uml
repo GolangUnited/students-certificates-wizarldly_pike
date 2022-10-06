@@ -1,0 +1,19 @@
+@startuml
+box certificate microservice
+group Certificate internal 
+participant Storage as Storage 
+participant certificate as certificate 
+
+
+certificate <-- Web: gRPC Request{course, student, templateName}
+
+certificate --> certificate : generate certificate
+
+certificate --> Storage : save certificate
+ 
+certificate --> Web: gRPC Response
+end
+
+end box
+participant Web  as Web
+@enduml
