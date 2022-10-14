@@ -45,7 +45,7 @@ paths:
     
 components:
   schemas:
-    Certificate:
+    File:
       type: object
       required:
        - name
