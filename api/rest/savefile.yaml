@@ -51,6 +51,6 @@ components:
        - name
        - status
       properties:
-        id:
+        path:
           type: string
         
