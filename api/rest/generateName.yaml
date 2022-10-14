@@ -57,7 +57,7 @@ paths:
     
 components:
   schemas:
-    Certificate:
+    Template:
       type: object
       required:
        - name
