@@ -76,6 +76,6 @@ components:
        - name
        - status
       properties:
-        id:
+        name:
           type: string
         
