@@ -45,12 +45,12 @@ paths:
     
 components:
   schemas:
-    Certificate:
+    Template:
       type: object
       required:
        - name
        - status
       properties:
-        template:
+        name:
           type: string
         
