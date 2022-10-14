@@ -14,7 +14,7 @@ paths:
       description: ''
       operationId: saveFile
       parameters:
-        - name: templateName
+        - name: path
           in: query
           description: ''
           required: true
@@ -29,10 +29,6 @@ paths:
       responses:
         '200':
           description: successful operation
-          content:
-            application/json:
-             schema:
-              $ref: '#/components/schemas/Certificate'
         '400':
           description: Invalid parameters
         '404':
@@ -41,16 +37,3 @@ paths:
           description: Internal server error
         default:
           description: Unexpected error
-
-    
-components:
-  schemas:
-    File:
-      type: object
-      required:
-       - name
-       - status
-      properties:
-        path:
-          type: string
-        
