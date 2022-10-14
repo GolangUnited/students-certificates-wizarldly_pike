@@ -10,7 +10,7 @@ paths:
     post:
       tags: 
         - template
-      summary: Method for selecting template
+      summary: Method for selecting template from storage
       description: ''
       operationId: selectTemplate
       parameters:
