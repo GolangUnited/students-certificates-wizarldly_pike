@@ -51,6 +51,6 @@ components:
        - name
        - status
       properties:
-        name:
+        link:
           type: string
         
