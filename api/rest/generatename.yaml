@@ -65,4 +65,5 @@ components:
       properties:
         id:
           type: string
+          format: binary
         
