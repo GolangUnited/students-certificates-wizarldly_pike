@@ -32,8 +32,9 @@ paths:
           content:
             application/json:
              schema:
-              link:
-                type: string
+               properties:
+                link:
+                  type: string
         '400':
           description: Invalid parameters
         '404':
