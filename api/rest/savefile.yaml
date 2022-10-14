@@ -14,7 +14,7 @@ paths:
       description: ''
       operationId: saveFile
       parameters:
-        - name: path
+        - name: templateName
           in: query
           description: ''
           required: true
@@ -29,6 +29,12 @@ paths:
       responses:
         '200':
           description: successful operation
+          content:
+            application/json:
+             schema:
+              properties:
+                path:
+                  type: string
         '400':
           description: Invalid parameters
         '404':
