@@ -6,7 +6,7 @@ info:
 servers:
   - url: http://localhost:8080/certificateService
 paths:
-  /selectTemplate:
+  /selecttemplate:
     post:
       tags: 
         - template

@@ -6,7 +6,7 @@ info:
 servers:
   - url: http://localhost:8080/certificateService
 paths:
-  /generateCertificate:
+  /generatecertificate:
     post:
       tags: 
         - certificate
