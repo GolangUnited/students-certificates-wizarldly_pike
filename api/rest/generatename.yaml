@@ -44,7 +44,10 @@ paths:
           content:
             application/json:
              schema:
-              $ref: '#/components/schemas/Template'
+              properties:
+               id:
+                type: string
+                format: binary
         '400':
           description: Invalid parameters
         '404':
@@ -54,16 +57,6 @@ paths:
         default:
           description: Unexpected error
 
-    
-components:
-  schemas:
-    Template:
-      type: object
-      required:
-       - name
-       - status
-      properties:
-        id:
-          type: string
-          format: binary
+
+   
         
