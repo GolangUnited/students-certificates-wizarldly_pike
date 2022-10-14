@@ -9,7 +9,7 @@ paths:
   /getcertificate:
     post:
       tags: 
-        - web
+        - Certificate
       summary: Method to handle a web-service request
       description: ''
       operationId: webrequest
@@ -65,4 +65,4 @@ components:
       properties:
         certificate:
           type: string
-        
+          format: byte
