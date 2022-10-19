@@ -47,7 +47,7 @@ message AddTemplateReq {
 }
 
 message AddTemplateResp {
-    int32 error = 2;
+    int32 error = 1;
 }
 
 message StudentMessage {
