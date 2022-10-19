@@ -1,0 +1,64 @@
+syntax = "proto3";
+
+package certificate;
+
+option go_package = "protobuf/transport;certificate";
+
+import "google/protobuf/empty.proto";
+
+service Certificate {
+    rpc IssueCertificate(IssueCertificateReq) returns (IssueCertificateResp);
+    rpc GetCertificateByID(GetByIdReq) returns (GetByIdResp);
+    rpc GetCertificateByLink(GetByLinkReq) returns (GetByLinkResp);
+    rpc AddTemplate(AddTemplateReq) returns (AddTemplateResp);
+}
+
+message IssueCertificateReq {
+    StudentMessage student = 1;
+    string templateName = 2;
+    CourseMessage course = 3;
+}
+
+message IssueCertificateResp {
+    string name = 1;
+    int32 error = 2;
+}
+
+message GetByIdReq {
+    string id = 1;
+}
+
+message GetByIdResp {
+    byte certificate = 1;
+    int32 error = 2;
+}
+
+message GetByLinkReq {
+    string link = 1;
+}
+
+message GetByLinkResp {
+    byte certificate = 1;
+    int32 error = 2;
+}
+
+message AddTemplateReq {
+    byte template = 1;
+}
+
+message AddTemplateResp {
+    int32 error = 2;
+}
+
+message StudentMessage {
+    string forename = 1;
+    string surname = 2;
+}
+
+message CourseMessage {
+    string courseName = 1;
+    string courseType = 2;
+    string hours = 3;
+    string date = 4;
+    repeated string mentors = 5;
+}
