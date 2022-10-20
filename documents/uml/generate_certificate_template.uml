@@ -5,7 +5,8 @@ if (generate certificate) then (failed)
 :return error to web;
 
 else (succeed)
-:next steps...;
+:generate name;
+:save file;
 
 endif
 
