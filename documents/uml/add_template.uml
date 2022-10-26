@@ -11,13 +11,19 @@ participant Web as web
 end box 
 
 alt#Gold #LightBlue HTTP
-    web -> crt: HTTP POST /template {template}
+    web -> crt: HTTP POST /template {templateName, template[]byte}
 else #Pink gRPC
-    web -> crt: rpc certificate_template {template}
+    web -> crt: rpc certificate_template {templateName, template[]byte}
 end
 
 group Certificate internal 
   str <-- crt : save template
 end
-crt --> web: HTTP 200 OK
+
+alt#Gold #LightBlue HTTP
+    crt --> web: HTTP 200 OK
+else #Pink gRPC
+    crt --> web: rpc {status code}
+end
+
 @enduml

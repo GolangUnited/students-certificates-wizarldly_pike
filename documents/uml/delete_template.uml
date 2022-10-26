@@ -11,13 +11,19 @@ participant Web as web
 end box 
 
 alt#Gold #LightBlue HTTP
-    web -> crt: HTTP DELETE/template_del {template name}
+    web -> crt: HTTP DELETE/template_del {templateName}
 else #Pink gRPC
-    web -> crt: rpc certificate_template_del {template name}
+    web -> crt: rpc certificate_template_del {templateName}
 end
 
 group Certificate internal 
   str <-- crt : delete template
 end
-crt --> web: HTTP 200 OK
+
+alt#Gold #LightBlue HTTP
+    crt --> web: HTTP 200 OK
+else #Pink gRPC
+    crt --> web: rpc {status code}
+
+end
 @enduml

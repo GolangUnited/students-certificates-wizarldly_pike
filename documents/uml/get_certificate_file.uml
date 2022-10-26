@@ -19,5 +19,11 @@ end
 group Certificate internal 
   str <--> crt : find by ID
 end
-crt --> web: HTTP 200 OK certificate_[]byte
+
+alt#Gold #LightBlue HTTP
+    crt --> web: HTTP 200 OK {certificate_[]byte}
+else #Pink gRPC
+    crt --> web: rpc {status code, certificate_[]byte}
+end
+
 @enduml

@@ -11,9 +11,9 @@ participant Web as web
 end box 
 
 alt#Gold #LightBlue HTTP
-    web -> crt: HTTP POST /certificate {course, student, templateName}
+    web -> crt: HTTP POST /certificate {course, studentName, templateName}
 else #Pink gRPC
-    web -> crt: rpc certificate_issue {course, student, templateName}
+    web -> crt: rpc certificate_issue {course, studentName, templateName}
 end
 
 group Certificate internal 
@@ -22,5 +22,11 @@ group Certificate internal
   crt --> crt : generate ID/name
   crt --> str: save file
 end
-crt --> web: HTTP 200 OK certificate_ID
+
+alt#Gold #LightBlue HTTP
+    crt --> web: HTTP 200 OK {certificate_ID}
+else #Pink gRPC
+    crt --> web: rpc {status code, certificate_ID}
+end
+
 @enduml

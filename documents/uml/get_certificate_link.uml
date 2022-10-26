@@ -20,5 +20,11 @@ group Certificate internal
   str <--> crt : find by ID
   crt --> crt : generate link
 end
-crt --> web: HTTP 200 OK certificate_url
+
+alt#Gold #LightBlue HTTP
+    crt --> web: HTTP 200 OK {certificate_url}
+else #Pink gRPC
+    crt --> web: rpc {status code, certificate_url}
+end
+
 @enduml
