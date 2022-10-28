@@ -21,10 +21,6 @@ message IssueCertificateReq {
 
 message IssueCertificateResp {
     string name = 1;
-    oneof error {
-        int32 error_num = 2;
-        string description = 3;
-    }
 }
 
 message GetByIdReq {
@@ -33,10 +29,6 @@ message GetByIdReq {
 
 message GetByIdResp {
     bytes certificate = 1;
-    oneof error {
-        int32 error_num = 2;
-        string description = 3;
-    }
 }
 
 message GetByLinkReq {
@@ -45,10 +37,6 @@ message GetByLinkReq {
 
 message GetByLinkResp {
     bytes certificate = 1;
-    oneof error {
-        int32 error_num = 2;
-        string description = 3;
-    }
 }
 
 message AddTemplateReq {
@@ -56,10 +44,7 @@ message AddTemplateReq {
 }
 
 message AddTemplateResp {
-    oneof error {
-        int32 error_num = 1;
-        string description = 2;
-    }
+
 }
 
 message StudentMessage {
