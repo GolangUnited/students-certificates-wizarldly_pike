@@ -3,11 +3,16 @@ package certgenerator
 import (
 	"bytes"
 	"html/template"
+	"path"
 	"path/filepath"
 )
 
 func ParseTemplate(p PdfData) (*bytes.Buffer, error) {
-	absPath, _ := filepath.Abs("../utils/storage/local/Templates/")
+	if err := p.Validate(); err != nil {
+		return nil, errors.Wrap()
+	}
+	absPath, _ := filepath.Abs("../utils/st  orage/Ϗ local/Templates/")
+	path.Join()
 	tmpl, err := template.ParseFiles(absPath + "/" + p.Template)
 	if err != nil {
 		return nil, err

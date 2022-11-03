@@ -5,63 +5,14 @@ import (
 )
 
 type validData struct {
-	Template string
+	Template string `json:"template", validate:"minLen=3"`
 	Format   string
 	Title    string
 	Student  string
 	Course   string
 	Mentors  string
 	Date     string
-	Errors   map[string]string
-}
-
-func (p *PdfData) SetTemplate() (string, error) {
-	if p.Template == "" {
-		return "", errors.New("You need to pass the template data!")
-	}
-	return p.Template, nil
-}
-
-func (p *PdfData) SetFormat() (string, error) {
-	if p.Format == "" {
-		return "", errors.New("You need to pass the format data!")
-	}
-	return p.Format, nil
-}
-
-func (p *PdfData) SetTitle() (string, error) {
-	if p.Title == "" {
-		return "", errors.New("You need to pass the title data!")
-	}
-	return p.Title, nil
-}
-
-func (p *PdfData) SetStudent() (string, error) {
-	if p.Student == "" {
-		return "", errors.New("You need to pass the student data!")
-	}
-	return p.Student, nil
-}
-
-func (p *PdfData) SetCourse() (string, error) {
-	if p.Course == "" {
-		return "", errors.New("You need to pass the course data!")
-	}
-	return p.Course, nil
-}
-
-func (p *PdfData) SetMentors() (string, error) {
-	if p.Mentors == "" {
-		return "", errors.New("You need to pass the mentors data!")
-	}
-	return p.Mentors, nil
-}
-
-func (p *PdfData) SetDate() (string, error) {
-	if p.Format == "" {
-		return "", errors.New("You need to pass the date data!")
-	}
-	return p.Date, nil
+	Errors   map[string]error
 }
 
 func validator(pdfData PdfData) (validData, error) {
@@ -73,7 +24,7 @@ func validator(pdfData PdfData) (validData, error) {
 
 	vD.Template, err = pdfData.SetTemplate()
 	if err != nil {
-		vD.Errors["SetTemplate"] = err.Error()
+		vD.Errors["SetTemplate"] = err
 	}
 
 	vD.Format, err = pdfData.SetFormat()
