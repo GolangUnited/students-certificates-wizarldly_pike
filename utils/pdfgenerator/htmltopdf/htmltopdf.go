@@ -8,7 +8,6 @@ import (
 
 type htmltopdf struct {
 	pdfgenerator *wkhtmltopdf.PDFGenerator
-	bufer        *bytes.Buffer
 }
 
 func New() (*htmltopdf, error) {
@@ -19,16 +18,13 @@ func New() (*htmltopdf, error) {
 
 	htp := &htmltopdf{}
 	htp.pdfgenerator = pdfg
-	htp.bufer = bytes.NewBuffer(make([]byte, 0))
-
-	pdfg.SetOutput(htp.bufer)
 
 	return htp, nil
 }
 
 func (h *htmltopdf) RenderHtmlToPdf(htmlBytes []byte) ([]byte, error) {
-	h.bufer.Reset()
 	h.pdfgenerator.ResetPages()
+	h.pdfgenerator.Buffer().Reset()
 
 	bytesReader := bytes.NewReader(htmlBytes)
 	h.pdfgenerator.AddPage(wkhtmltopdf.NewPageReader(bytesReader))
@@ -36,5 +32,5 @@ func (h *htmltopdf) RenderHtmlToPdf(htmlBytes []byte) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	return h.bufer.Bytes(), nil
+	return h.pdfgenerator.Bytes(), nil
 }
