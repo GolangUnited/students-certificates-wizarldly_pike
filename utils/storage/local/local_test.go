@@ -140,7 +140,7 @@ func TestCertificatesOperations(t *testing.T) {
 	}
 }
 
-func TestGetCertificateLink(t *testing.T) {
+func TestGetCertificatePath(t *testing.T) {
 	testData, err := generateTestData(currentWorkDir, currentWorkDir)
 	if err != nil {
 		t.Fatal(err)
