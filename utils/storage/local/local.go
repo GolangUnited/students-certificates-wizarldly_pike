@@ -55,7 +55,7 @@ func (l *localStorage) GetCertificate(fileName string) ([]byte, error) {
 	return getFile(fullPath)
 }
 
-func (l *localStorage) GetCertificateLink(fileName string) (string, error) {
+func (l *localStorage) GetCertificatePath(fileName string) (string, error) {
 	fullPath := path.Join(l.certificatesDir, fileName)
 
 	if _, err := os.Stat(fullPath); errors.Is(err, fs.ErrNotExist) {

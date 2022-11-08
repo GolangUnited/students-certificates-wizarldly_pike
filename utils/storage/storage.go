@@ -7,7 +7,7 @@ import (
 type storage interface {
 	GetTemplate(string) ([]byte, error)
 	GetCertificate(string) ([]byte, error)
-	GetCertificateLink(string) (string, error)
+	GetCertificatePath(string) (string, error)
 
 	SaveTemplate(string, []byte) error
 	SaveCertificate(string, []byte) error

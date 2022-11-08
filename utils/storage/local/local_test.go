@@ -153,7 +153,7 @@ func TestGetCertificateLink(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	actualPath, err := testData.GetCertificateLink(testFileName)
+	actualPath, err := testData.GetCertificatePath(testFileName)
 	if err != nil {
 		t.Error(err)
 	}
