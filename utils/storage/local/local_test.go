@@ -2,29 +2,17 @@ package local
 
 import (
 	"os"
+	"path"
 	"reflect"
 	"testing"
 )
 
+var currentWorkDir string
+
 func generateTestData(testTemplatesDir, testCertificatesDir string) (*localStorage, error) {
-
-	templatesDir, ok := os.LookupEnv(envTemplatesDir)
-	if ok {
-		defer os.Setenv(envTemplatesDir, templatesDir)
-	} else {
-		defer os.Unsetenv(envTemplatesDir)
-	}
-
 	err := os.Setenv(envTemplatesDir, testTemplatesDir)
 	if err != nil {
 		return nil, err
-	}
-
-	certificatesDir, ok := os.LookupEnv(envCertificatesDir)
-	if ok {
-		defer os.Setenv(envCertificatesDir, certificatesDir)
-	} else {
-		defer os.Unsetenv(envCertificatesDir)
 	}
 
 	err = os.Setenv(envCertificatesDir, testCertificatesDir)
@@ -34,9 +22,36 @@ func generateTestData(testTemplatesDir, testCertificatesDir string) (*localStora
 	return New()
 }
 
+func TestMain(m *testing.M) {
+	currentDir, err := os.Getwd()
+	if err != nil {
+		os.Exit(1)
+	}
+	currentWorkDir = currentDir
+
+	templatesDir, existsEnvTemplatesDir := os.LookupEnv(envTemplatesDir)
+	certificatesDir, existsEnvCertificatesDir := os.LookupEnv(envCertificatesDir)
+
+	code := m.Run()
+
+	if existsEnvTemplatesDir {
+		os.Setenv(envTemplatesDir, templatesDir)
+	} else {
+		os.Unsetenv(envTemplatesDir)
+	}
+
+	if existsEnvCertificatesDir {
+		os.Setenv(envCertificatesDir, certificatesDir)
+	} else {
+		os.Unsetenv(envCertificatesDir)
+	}
+
+	os.Exit(code)
+}
+
 func TestNew_envTemplatesDir_fail(t *testing.T) {
 	testTemplatesDir := ""
-	testCertificatesDir := "/test/Certificates"
+	testCertificatesDir := currentWorkDir
 	_, err := generateTestData(testTemplatesDir, testCertificatesDir)
 	if err == nil {
 		t.Error("err must not be nil")
@@ -44,7 +59,7 @@ func TestNew_envTemplatesDir_fail(t *testing.T) {
 }
 
 func TestNew_envCertificatesDir_fail(t *testing.T) {
-	testTemplatesDir := "/test/Templates"
+	testTemplatesDir := currentWorkDir
 	testCertificatesDir := ""
 	_, err := generateTestData(testTemplatesDir, testCertificatesDir)
 	if err == nil {
@@ -53,8 +68,8 @@ func TestNew_envCertificatesDir_fail(t *testing.T) {
 }
 
 func TestNew_envDirs(t *testing.T) {
-	testTemplatesDir := "/test/Templates"
-	testCertificatesDir := "/test/Certificates"
+	testTemplatesDir := currentWorkDir
+	testCertificatesDir := currentWorkDir
 	testData, err := generateTestData(testTemplatesDir, testCertificatesDir)
 	if err != nil {
 		t.Fatal(err)
@@ -70,12 +85,7 @@ func TestNew_envDirs(t *testing.T) {
 }
 
 func TestTemplatesOperations(t *testing.T) {
-	currentDir, err := os.Getwd()
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	testData, err := generateTestData(currentDir, currentDir)
+	testData, err := generateTestData(currentWorkDir, currentWorkDir)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -98,17 +108,12 @@ func TestTemplatesOperations(t *testing.T) {
 
 	err = testData.DeleteTemplate(testFileName)
 	if err != nil {
-		t.Error(err, currentDir)
+		t.Error(err)
 	}
 }
 
 func TestCertificatesOperations(t *testing.T) {
-	currentDir, err := os.Getwd()
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	testData, err := generateTestData(currentDir, currentDir)
+	testData, err := generateTestData(currentWorkDir, currentWorkDir)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -131,6 +136,35 @@ func TestCertificatesOperations(t *testing.T) {
 
 	err = testData.DeleteCertificate(testFileName)
 	if err != nil {
-		t.Error(err, currentDir)
+		t.Error(err)
+	}
+}
+
+func TestGetCertificateLink(t *testing.T) {
+	testData, err := generateTestData(currentWorkDir, currentWorkDir)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	testFileName := "testDataCertificates.tmp"
+	testBytes := []byte("Test Certificates Operations")
+	err = testData.SaveCertificate(testFileName, testBytes)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	actualPath, err := testData.GetCertificateLink(testFileName)
+	if err != nil {
+		t.Error(err)
+	}
+	expectedPath := path.Join(currentWorkDir, testFileName)
+
+	if actualPath != expectedPath {
+		t.Errorf("expect path:%q, actual path:%q", expectedPath, actualPath)
+	}
+
+	err = testData.DeleteCertificate(testFileName)
+	if err != nil {
+		t.Error(err)
 	}
 }

@@ -1,8 +1,9 @@
 package local
 
 import (
+	"errors"
 	"fmt"
-	"log"
+	"io/fs"
 	"os"
 	"path"
 )
@@ -17,33 +18,23 @@ type localStorage struct {
 	certificatesDir string
 }
 
-// Функцияя init на период разработки, для облегчения отладки, потом функцию удалить
-func init() {
-	currentDir, err := os.Getwd()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	templatesDir := os.Getenv(envTemplatesDir)
-	if templatesDir == "" {
-		os.Setenv(envTemplatesDir, currentDir)
-	}
-
-	certificatesDir := os.Getenv(envCertificatesDir)
-	if certificatesDir == "" {
-		os.Setenv(envCertificatesDir, currentDir)
-	}
-}
-
 func New() (*localStorage, error) {
 	templatesDir := os.Getenv(envTemplatesDir)
 	if templatesDir == "" {
 		return nil, fmt.Errorf("environment variable %q not set", envTemplatesDir)
 	}
+	err := os.MkdirAll(templatesDir, os.ModePerm)
+	if err != nil {
+		return nil, err
+	}
 
 	certificatesDir := os.Getenv(envCertificatesDir)
 	if certificatesDir == "" {
 		return nil, fmt.Errorf("environment variable %q not set", envCertificatesDir)
+	}
+	err = os.MkdirAll(certificatesDir, os.ModePerm)
+	if err != nil {
+		return nil, err
 	}
 
 	ls := &localStorage{}
@@ -62,6 +53,15 @@ func (l *localStorage) GetTemplate(fileName string) ([]byte, error) {
 func (l *localStorage) GetCertificate(fileName string) ([]byte, error) {
 	fullPath := path.Join(l.certificatesDir, fileName)
 	return getFile(fullPath)
+}
+
+func (l *localStorage) GetCertificateLink(fileName string) (string, error) {
+	fullPath := path.Join(l.certificatesDir, fileName)
+
+	if _, err := os.Stat(fullPath); errors.Is(err, fs.ErrNotExist) {
+		return "", err
+	}
+	return fullPath, nil
 }
 
 func (l *localStorage) SaveTemplate(fileName string, data []byte) error {
