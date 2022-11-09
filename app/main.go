@@ -39,7 +39,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	//Для теста сохраняtv на диске:
+	//Для теста сохраняем на диске:
 	err = c.Save(pdfData)
 	if err != nil {
 		log.Fatal(err)
