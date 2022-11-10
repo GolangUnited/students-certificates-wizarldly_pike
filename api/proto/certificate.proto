@@ -1,0 +1,75 @@
+syntax = "proto3";
+
+package certificate;
+
+option go_package = "protobuf/transport;certificate";
+
+import "google/protobuf/empty.proto";
+
+service Certificate {
+    rpc IssueCertificate(IssueCertificateReq) returns (IssueCertificateResp);
+    rpc GetCertificateFileByID(GetCertificateFileByIDReq) returns (GetCertificateFileByIDResp);
+    rpc GetCertificateLinkByID(GetCertificateLinkByIDReq) returns (GetCertificateLinkByIDResp);
+    rpc AddTemplate(AddTemplateReq) returns (AddTemplateResp);
+    rpc DelTemplate(DelTemplateReq) returns (DelTemplateResp);
+}
+
+message IssueCertificateReq {
+    StudentMessage student = 1;
+    string template_name = 2;
+    CourseMessage course = 3;
+}
+
+message IssueCertificateResp {
+    string id = 1;
+}
+
+message GetCertificateFileByIDReq {
+    string id = 1;
+}
+
+message GetCertificateLinkByIDReq {
+    string id = 1;
+}
+
+message GetCertificateFileByIDResp {
+    bytes certificate = 1;
+}
+
+message GetCertificateLinkByIDResp {
+    string link = 1;
+}
+
+message AddTemplateReq {
+    string template_name = 1;
+    bytes template = 2;
+}
+
+message DelTemplateReq {
+    string template_name = 1;
+}
+
+message AddTemplateResp {
+    Status status = 1;
+}
+
+message DelTemplateResp {
+    Status status = 1;
+}
+
+message StudentMessage {
+    string firstname = 1;
+    string lastname = 2;
+}
+
+message CourseMessage {
+    string course_name = 1;
+    string course_type = 2;
+    string hours = 3;
+    string date = 4;
+    repeated string mentors = 5;
+}
+
+message Status {
+    int32 code = 1;
+}
