@@ -2,10 +2,10 @@ package pdfgenerator
 
 import "gus_certificates/utils/pdfgenerator/htmltopdf"
 
-type pdfgenerator interface {
+type PdfGenerator interface {
 	RenderHtmlToPdf([]byte) ([]byte, error)
 }
 
-func New() (pdfgenerator, error) {
+func New() (PdfGenerator, error) {
 	return htmltopdf.New()
 }
