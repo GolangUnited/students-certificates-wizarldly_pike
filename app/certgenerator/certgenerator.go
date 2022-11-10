@@ -2,6 +2,8 @@ package certgenerator
 
 import (
 	"bytes"
+	"crypto/md5"
+	"fmt"
 	"html/template"
 	"strings"
 )
@@ -38,10 +40,15 @@ func (c *CertGenerator) GenerateCertHTML(templateHTMLData []byte) ([]byte, error
 	return buf.Bytes(), nil
 }
 
-// func (c *CertGenerator) getDataForIDGenerator() string {
-// 	return fmt.Sprintf("%s%s%s%s%s%s", c.data.CourseName, c.data.CourseType, c.data.CourseHours,
-// 		c.data.CourseDate, c.data.StudentFirstname, c.data.StudentLastname)
-// }
+func (c *CertGenerator) GenerateID() string {
+	data := []byte(c.getDataForIDGenerator())
+	return fmt.Sprintf("%x", md5.Sum(data))
+}
+
+func (c *CertGenerator) getDataForIDGenerator() string {
+	return fmt.Sprintf("%s%s%s%s%s%s", c.data.CourseName, c.data.CourseType, c.data.CourseHours,
+		c.data.CourseDate, c.data.StudentFirstname, c.data.StudentLastname)
+}
 
 func (c *CertGenerator) SetCourseName(courseName string) {
 	c.data.CourseName = courseName
