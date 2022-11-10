@@ -1,0 +1,47 @@
+openapi: 3.0.0
+info:
+  title: Swagger certificate service - OpenAPI 3.0
+  version: 0.0.1
+  description: "Open API for the certificate microservice"
+servers:
+  - url: http://localhost:8080/certificateService
+paths:
+  /selecttemplate:
+    post:
+      tags: 
+        - template
+      summary: Method for selecting template from storage
+      description: ''
+      operationId: selectTemplate
+      parameters:
+        - name: templateName
+          in: query
+          description: ''
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+           application/octet-stream:
+            schema:
+              type: string
+              format: binary
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+             schema:
+               properties:
+                link:
+                  type: string
+        '400':
+          description: Invalid parameters
+        '404':
+          description: Not found
+        '500':
+          description: Internal server error
+        default:
+          description: Unexpected error
+
+        

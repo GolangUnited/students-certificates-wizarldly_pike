@@ -1,0 +1,65 @@
+openapi: 3.0.0
+info:
+  title: Swagger certificate service - OpenAPI 3.0
+  version: 0.0.1
+  description: "Open API for the certificate microservice"
+servers:
+  - url: http://localhost:8080/certificateService
+paths:
+  /getcertificate:
+    post:
+      tags: 
+        - Certificate
+      summary: Method to handle a web-service request
+      description: ''
+      operationId: webrequest
+      parameters:
+        - name: student
+          in: query
+          description: ''
+          required: true
+          schema:
+            type: string
+        - name: course
+          in: query
+          description: ''
+          required: true
+          schema:
+            type: string
+        - name: templateName
+          in: query
+          description: ''
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+           application/octet-stream:
+            schema:
+              type: string
+              format: binary
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+             schema:
+              $ref: '#/components/schemas/Certificate'
+        '400':
+          description: Invalid parameters
+        '404':
+          description: Not found
+        '500':
+          description: Internal server error
+        default:
+          description: Unexpected error
+
+    
+components:
+  schemas:
+    Certificate:
+      type: object
+      properties:
+        certificate:
+          type: string
+          format: byte
