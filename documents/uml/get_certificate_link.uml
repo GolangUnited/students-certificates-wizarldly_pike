@@ -1,0 +1,30 @@
+@startuml
+title Get certificate link by ID
+
+box Certificate Microservice
+collections Storage as str
+participant Certificates as crt
+end box 
+
+box "Web Microservice" #LightBlue
+participant Web as web
+end box 
+
+alt#Gold #LightBlue HTTP
+    web -> crt: HTTP GET /link {ID}
+else #Pink gRPC
+    web -> crt: rpc certificate_link {ID}
+end
+
+group Certificate internal 
+  str <--> crt : find by ID
+  crt --> crt : generate link
+end
+
+alt#Gold #LightBlue HTTP
+    crt --> web: HTTP 200 OK {certificate_url}
+else #Pink gRPC
+    crt --> web: rpc {status code, certificate_url}
+end
+
+@enduml
