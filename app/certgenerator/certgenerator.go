@@ -2,9 +2,16 @@ package certgenerator
 
 import (
 	"bytes"
+	"crypto/md5"
+	"fmt"
 	"html/template"
 	"strings"
+
+	valid "github.com/go-ozzo/ozzo-validation/v4"
 )
+
+var shortTextFieldRule = []valid.Rule{valid.Required, valid.RuneLength(1, 50)}
+var longTextFieldRule = []valid.Rule{valid.Required, valid.RuneLength(1, 250)}
 
 type CertGenerator struct {
 	data certData
@@ -18,6 +25,18 @@ type certData struct {
 	CourseMentors    string
 	StudentFirstname string
 	StudentLastname  string
+}
+
+func (c *CertGenerator) ValidateData() error {
+	return valid.ValidateStruct(&c.data,
+		valid.Field(&c.data.CourseName, longTextFieldRule...),
+		valid.Field(&c.data.CourseType, shortTextFieldRule...),
+		valid.Field(&c.data.CourseHours, shortTextFieldRule...),
+		valid.Field(&c.data.CourseDate, shortTextFieldRule...),
+		valid.Field(&c.data.CourseMentors, longTextFieldRule...),
+		valid.Field(&c.data.StudentFirstname, shortTextFieldRule...),
+		valid.Field(&c.data.StudentLastname, shortTextFieldRule...),
+	)
 }
 
 func (c *CertGenerator) GenerateCertHTML(templateHTMLData []byte) ([]byte, error) {
@@ -38,10 +57,21 @@ func (c *CertGenerator) GenerateCertHTML(templateHTMLData []byte) ([]byte, error
 	return buf.Bytes(), nil
 }
 
-// func (c *CertGenerator) getDataForIDGenerator() string {
-// 	return fmt.Sprintf("%s%s%s%s%s%s", c.data.CourseName, c.data.CourseType, c.data.CourseHours,
-// 		c.data.CourseDate, c.data.StudentFirstname, c.data.StudentLastname)
-// }
+func (c *CertGenerator) CheckTemplateHTML(templateHTMLData []byte) error {
+	_, err := c.GenerateCertHTML(templateHTMLData)
+
+	return err
+}
+
+func (c *CertGenerator) GenerateID() string {
+	data := []byte(c.getDataForIDGenerator())
+	return fmt.Sprintf("%x", md5.Sum(data))
+}
+
+func (c *CertGenerator) getDataForIDGenerator() string {
+	return fmt.Sprintf("%s%s%s%s%s%s", c.data.CourseName, c.data.CourseType, c.data.CourseHours,
+		c.data.CourseDate, c.data.StudentFirstname, c.data.StudentLastname)
+}
 
 func (c *CertGenerator) SetCourseName(courseName string) {
 	c.data.CourseName = courseName
