@@ -13,18 +13,18 @@
 ### Требования к шаблонам:
 В шаблоне могут содержаться следующие теги замены:
 ```
-    {{.CourseName}}
-    {{.CourseType}}
-    {{.CourseHours}}
-    {{.CourseDate}}
-    {{.CourseMentors}}
-    {{.StudentFirstname}}
-    {{.StudentLastname}}
-    {{.QrCodeLink}}
+{{.CourseName}}
+{{.CourseType}}
+{{.CourseHours}}
+{{.CourseDate}}
+{{.CourseMentors}}
+{{.StudentFirstname}}
+{{.StudentLastname}}
+{{.QrCodeLink}}
 ```
 Шаблоны с любыми другими тегами замены будут отклонены валидатором.  
 Вместо тега замены `{{.QrCodeLink}}` будет вставлен **QR** код в формате **PNG**: ссылка на сертификат.  
 Например: `"<img src={{.QrCodeLink}} width="128" height="128">"`
 
 ### Пример простого HTML шаблона:
-`"<html><body><h1 style="color:red;">Test html color<h1><p>{{.CourseName}}</p><p>{{.CourseType}}</p><p>{{.CourseHours}}</p><p>{{.CourseDate}}</p><p>{{.CourseMentors}}</p><p>{{.StudentFirstname}}</p><p>{{.StudentLastname}}</p><p><img src={{.QrCodeLink}} width="128" height="128"></p></body></html>"`
+```"<html><body><h1 style="color:red;">Test html color<h1><p>{{.CourseName}}</p><p>{{.CourseType}}</p><p>{{.CourseHours}}</p><p>{{.CourseDate}}</p><p>{{.CourseMentors}}</p><p>{{.StudentFirstname}}</p><p>{{.StudentLastname}}</p><p><img src={{.QrCodeLink}} width="128" height="128"></p></body></html>"```
