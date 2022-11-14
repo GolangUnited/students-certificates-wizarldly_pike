@@ -61,10 +61,6 @@ func TestGenerateCertificate(t *testing.T) {
 
 func TestGenerateID(t *testing.T) {
 	generator := testData.certGenerator
-	_, err := generator.GenerateCertHTML(testData.goodTemplate)
-	if err != nil {
-		t.Error(err)
-	}
 
 	actualId := generator.GenerateID()
 	if actualId != testData.expectedId {
