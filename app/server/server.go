@@ -5,6 +5,7 @@ import (
 	"gus_certificates/app/certgenerator"
 	certSPb "gus_certificates/protobuf/transport/certificate"
 	"gus_certificates/utils/pdfgenerator"
+	"gus_certificates/utils/qrgenerator"
 	"gus_certificates/utils/storage"
 
 	valid "github.com/go-ozzo/ozzo-validation/v4"
@@ -30,6 +31,9 @@ type certificateServer struct {
 
 	// Работа с локальным файловым хранилищем.
 	strgLoc storage.Storage
+
+	// Генерация QR кодов.
+	qrGen *qrgenerator.QrGenerator
 }
 
 func NewCertificateServer() (*certificateServer, error) {
@@ -47,6 +51,7 @@ func NewCertificateServer() (*certificateServer, error) {
 	server.certGen = &certgenerator.CertGenerator{}
 	server.pdfGen = pdfGen
 	server.strgLoc = strgLoc
+	server.qrGen = &qrgenerator.QrGenerator{}
 
 	return server, nil
 }
@@ -74,6 +79,16 @@ func (c *certificateServer) IssueCertificate(ctx context.Context, req *certSPb.I
 		return nil, status.Errorf(codes.InvalidArgument, "%s: %v", "IssueCertificate", err)
 	}
 
+	// Генерация ID/имени сертификата (ID + ".pdf").
+	nameCertificateIdPDF := c.certGen.GenerateID() + ".pdf"
+
+	// Генерация QR-Code на линк сертификата.
+	qrCodeLinkPNG, err := c.qrGen.GenerateQrPNG(nameCertificateIdPDF) // Пока не реализовано получение линка передается имя сертификата
+	if err != nil {
+		return nil, status.Errorf(codes.FailedPrecondition, "%s: %v", "IssueCertificate", err)
+	}
+	c.certGen.SetQrCodeLink(qrCodeLinkPNG)
+
 	// Получение шабона из хранилища.
 	template, err := c.strgLoc.GetTemplate(templateName)
 	if err != nil {
@@ -91,9 +106,6 @@ func (c *certificateServer) IssueCertificate(ctx context.Context, req *certSPb.I
 	if err != nil {
 		return nil, status.Errorf(codes.FailedPrecondition, "%s: %v", "IssueCertificate", err)
 	}
-
-	// Генерация ID/имени сертификата (ID + ".pdf").
-	nameCertificateIdPDF := c.certGen.GenerateID() + ".pdf"
 
 	// Сохранение сертификата в хранилище.
 	err = c.strgLoc.SaveCertificate(nameCertificateIdPDF, certificatePDF)

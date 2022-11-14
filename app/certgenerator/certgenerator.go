@@ -3,6 +3,7 @@ package certgenerator
 import (
 	"bytes"
 	"crypto/md5"
+	"encoding/base64"
 	"fmt"
 	"html/template"
 	"strings"
@@ -25,6 +26,7 @@ type certData struct {
 	CourseMentors    string
 	StudentFirstname string
 	StudentLastname  string
+	QrCodeLink       template.URL
 }
 
 func (c *CertGenerator) ValidateData() error {
@@ -99,4 +101,11 @@ func (c *CertGenerator) SetStudentFirstname(studentFirstname string) {
 
 func (c *CertGenerator) SetStudentLastname(studentLastname string) {
 	c.data.StudentLastname = studentLastname
+}
+
+func (c *CertGenerator) SetQrCodeLink(imgData []byte) {
+	htmlTagImagePngBase64 := "data:image/png;base64,"
+	imgBase64String := base64.StdEncoding.EncodeToString(imgData)
+
+	c.data.QrCodeLink = template.URL(fmt.Sprintf("%s%s", htmlTagImagePngBase64, imgBase64String))
 }
