@@ -16,6 +16,13 @@ func main() {
 	data.SetMentors("Pavel Gordiyanov, Mikita Viarbovikau, Sergey Shtripling")
 	data.SetDate("08.09.2022")
 
+	err := data.Validate()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println("Data validate")
+
 	//Для теста считываем содержимое файла "sample.html":
 	template, err := ioutil.ReadFile("sample.html")
 	if err != nil {
@@ -27,20 +34,13 @@ func main() {
 		log.Fatal(err)
 	}
 
-	err = data.Validate()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	fmt.Println("Data validate")
-
-	pdfData, err := pdfgenerator.GeneratePDF(buffer)
+	pdf, err := pdfgenerator.GeneratePDF(buffer)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	//Для теста сохраняем на диске:
-	err = c.Save(pdfData)
+	err = c.Save(pdf)
 	if err != nil {
 		log.Fatal(err)
 	}

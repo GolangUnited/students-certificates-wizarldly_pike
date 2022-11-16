@@ -2,16 +2,16 @@ package certgenerator
 
 import (
 	"bytes"
-	"gopkg.in/validator.v2"
+	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"html/template"
 )
 
 type PdfData struct {
-	Title   string `validate:"min=2"`
-	Student string `validate:"min=2"`
-	Course  string `validate:"min=2"`
-	Mentors string `validate:"min=2"`
-	Date    string `validate:"min=2"`
+	Title   string
+	Student string
+	Course  string
+	Mentors string
+	Date    string
 }
 
 func New() *PdfData {
@@ -43,6 +43,21 @@ func (p *PdfData) SetDate(s string) *PdfData {
 	return p
 }
 
+func (p PdfData) Validate() error {
+	return validation.ValidateStruct(&p,
+		// Title cannot be empty
+		validation.Field(&p.Title, validation.Required),
+		// Student cannot be empty
+		validation.Field(&p.Student, validation.Required),
+		// Course cannot be empty
+		validation.Field(&p.Course, validation.Required),
+		// Mentors cannot be empty
+		validation.Field(&p.Mentors, validation.Required),
+		// Date cannot be empty
+		validation.Field(&p.Date, validation.Required),
+	)
+}
+
 func (p *PdfData) ParseTemplate(input []byte) (*bytes.Buffer, error) {
 	t := template.New("certificate")
 	tmpl, err := t.Parse((string(input)))
@@ -55,9 +70,4 @@ func (p *PdfData) ParseTemplate(input []byte) (*bytes.Buffer, error) {
 		return nil, err
 	}
 	return buf, nil
-}
-
-func (p *PdfData) Validate() error {
-	err := validator.Validate(p)
-	return err
 }
