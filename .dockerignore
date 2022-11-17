@@ -1,0 +1,11 @@
+.git
+.gitkeep
+.gitignore
+.idea
+.vscode
+third_party/*
+*.pb.go
+temp
+*.md
+Dockerfile
+protoc_options_generate.txt
