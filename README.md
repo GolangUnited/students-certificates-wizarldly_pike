@@ -3,9 +3,9 @@
 
 ### Запуск сервиса в Docker:
 Собрать образ коммандой:  
-**"docker build -t сrtificatesserver"**  
+**"docker build -t cert ."**  
 Запустить сервис коммандой:  
-**"docker run -p 1234:1234 --rm сrtificatesserver"**  
+**"docker run -p 1234:1234 --rm cert"**  
 По умолчанию входящий порт **1234**  
 Автоматически монтируется **Docker VOLUME** на локальной машине/сервере, для сохранения шаблонов и сертификатов:   
 **certificatesstorage/templates**  
