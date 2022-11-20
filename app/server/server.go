@@ -2,16 +2,17 @@ package server
 
 import (
 	"context"
-	"gus_certificates/app/certgenerator"
-	certSPb "gus_certificates/protobuf/transport/certificate"
-	"gus_certificates/utils/pdfgenerator"
-	"gus_certificates/utils/qrgenerator"
-	"gus_certificates/utils/storage"
 
 	valid "github.com/go-ozzo/ozzo-validation/v4"
 	validIs "github.com/go-ozzo/ozzo-validation/v4/is"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+
+	"gus_certificates/app/certgenerator"
+	certSPb "gus_certificates/protobuf/transport/certificate"
+	"gus_certificates/utils/pdfgenerator"
+	"gus_certificates/utils/qrgenerator"
+	"gus_certificates/utils/storage"
 )
 
 var fileNameRule = []valid.Rule{
@@ -19,6 +20,8 @@ var fileNameRule = []valid.Rule{
 	valid.RuneLength(5, 255),
 	validIs.ASCII,
 }
+
+const certificateFileExtension = ".pdf"
 
 type certificateServer struct {
 	certSPb.UnimplementedCertificateServer
@@ -56,6 +59,16 @@ func NewCertificateServer() (*certificateServer, error) {
 	return server, nil
 }
 
+func (c *certificateServer) fillData(course *certSPb.CourseMessage, student *certSPb.StudentMessage) {
+	c.certGen.SetCourseName(course.GetCourseName())
+	c.certGen.SetCourseType(course.GetCourseType())
+	c.certGen.SetCourseHours(course.GetHours())
+	c.certGen.SetCourseDate(course.GetDate())
+	c.certGen.SetCourseMentors(course.GetMentors())
+	c.certGen.SetStudentFirstname(student.GetFirstname())
+	c.certGen.SetStudentLastname(student.GetLastname())
+}
+
 func (c *certificateServer) IssueCertificate(ctx context.Context, req *certSPb.IssueCertificateReq) (*certSPb.IssueCertificateResp, error) {
 	// Валидация имени шаблона.
 	templateName := req.GetTemplateName()
@@ -65,25 +78,17 @@ func (c *certificateServer) IssueCertificate(ctx context.Context, req *certSPb.I
 	}
 
 	// Заполнение и валидация данных о курсе и студенте.
-	course := req.GetCourse()
-	student := req.GetStudent()
-	c.certGen.SetCourseName(course.GetCourseName())
-	c.certGen.SetCourseType(course.GetCourseType())
-	c.certGen.SetCourseHours(course.GetHours())
-	c.certGen.SetCourseDate(course.GetDate())
-	c.certGen.SetCourseMentors(course.GetMentors())
-	c.certGen.SetStudentFirstname(student.GetFirstname())
-	c.certGen.SetStudentLastname(student.GetLastname())
+	c.fillData(req.GetCourse(), req.GetStudent())
 	err = c.certGen.ValidateData()
 	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "%s: %v", "IssueCertificate", err)
 	}
 
-	// Генерация ID/имени сертификата (ID + ".pdf").
-	nameCertificateIdPDF := c.certGen.GenerateID() + ".pdf"
+	// Генерация ID сертификата.
+	certificateId := c.certGen.GenerateID()
 
 	// Генерация QR-Code на линк сертификата.
-	qrCodeLinkPNG, err := c.qrGen.GenerateQrPNG(nameCertificateIdPDF) // Пока не реализовано получение линка передается имя сертификата
+	qrCodeLinkPNG, err := c.qrGen.GenerateQrPNG(certificateId) // Пока не реализовано получение линка передается имя сертификата
 	if err != nil {
 		return nil, status.Errorf(codes.FailedPrecondition, "%s: %v", "IssueCertificate", err)
 	}
@@ -108,12 +113,12 @@ func (c *certificateServer) IssueCertificate(ctx context.Context, req *certSPb.I
 	}
 
 	// Сохранение сертификата в хранилище.
-	err = c.strgLoc.SaveCertificate(nameCertificateIdPDF, certificatePDF)
+	err = c.strgLoc.SaveCertificate(certificateId+certificateFileExtension, certificatePDF)
 	if err != nil {
 		return nil, status.Errorf(codes.FailedPrecondition, "%s: %v", "IssueCertificate", err)
 	}
 
-	resp := &certSPb.IssueCertificateResp{Id: nameCertificateIdPDF}
+	resp := &certSPb.IssueCertificateResp{Id: certificateId}
 	return resp, nil
 }
 
@@ -126,7 +131,7 @@ func (c *certificateServer) GetCertificateFileByID(ctx context.Context, req *cer
 	}
 
 	// Получение сертификата из хранилища.
-	certificate, err := c.strgLoc.GetCertificate(certificateId)
+	certificate, err := c.strgLoc.GetCertificate(certificateId + certificateFileExtension)
 	if err != nil {
 		return nil, status.Errorf(codes.FailedPrecondition, "%s: %q %v", "GetCertificateFileByID", certificateId, err)
 	}
@@ -144,7 +149,7 @@ func (c *certificateServer) GetCertificateLinkByID(ctx context.Context, req *cer
 	}
 
 	// Получение полного пути до файла сертификата в хранилище.
-	certificateFullPath, err := c.strgLoc.GetCertificatePath(certificateId)
+	certificateFullPath, err := c.strgLoc.GetCertificatePath(certificateId + certificateFileExtension)
 	if err != nil {
 		return nil, status.Errorf(codes.FailedPrecondition, "%s: %q, %v", "GetCertificateLinkByID", certificateId, err)
 	}
@@ -178,7 +183,7 @@ func (c *certificateServer) AddTemplate(ctx context.Context, req *certSPb.AddTem
 	return resp, nil
 }
 
-func (c *certificateServer) DelTemplate(ctx context.Context, req *certSPb.DelTemplateReq) (*certSPb.DelTemplateResp, error) {
+func (c *certificateServer) DeleteTemplate(ctx context.Context, req *certSPb.DeleteTemplateReq) (*certSPb.DeleteTemplateResp, error) {
 	// Валидация имени шаблона.
 	templateName := req.GetTemplateName()
 	err := valid.Validate(templateName, fileNameRule...)
@@ -192,6 +197,6 @@ func (c *certificateServer) DelTemplate(ctx context.Context, req *certSPb.DelTem
 		return nil, status.Errorf(codes.FailedPrecondition, "%s: %q %v", "DelTemplate", templateName, err)
 	}
 
-	resp := &certSPb.DelTemplateResp{Status: &certSPb.Status{Code: int32(codes.OK)}}
+	resp := &certSPb.DeleteTemplateResp{Status: &certSPb.Status{Code: int32(codes.OK)}}
 	return resp, nil
 }

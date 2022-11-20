@@ -1,18 +1,27 @@
 package main
 
 import (
-	"gus_certificates/app/server"
+	"fmt"
 	"log"
 	"net"
-
-	certSPb "gus_certificates/protobuf/transport/certificate"
+	"os"
 
 	"google.golang.org/grpc"
+
+	"gus_certificates/app/server"
+	certSPb "gus_certificates/protobuf/transport/certificate"
 )
 
 func main() {
-	host := "0.0.0.0"
-	port := "1234"
+	host := os.Getenv("CERTIFICATES_HOST")
+	if host == "" {
+		log.Fatal(fmt.Errorf("environment variable %q not set", "CERTIFICATES_HOST"))
+	}
+
+	port := os.Getenv("CERTIFICATES_PORT")
+	if port == "" {
+		log.Fatal(fmt.Errorf("environment variable %q not set", "CERTIFICATES_PORT"))
+	}
 
 	err := runRpcServer(net.JoinHostPort(host, port))
 	if err != nil {
