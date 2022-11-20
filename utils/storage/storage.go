@@ -4,7 +4,7 @@ import (
 	"gus_certificates/utils/storage/local"
 )
 
-type storage interface {
+type Storage interface {
 	GetTemplate(string) ([]byte, error)
 	GetCertificate(string) ([]byte, error)
 	GetCertificatePath(string) (string, error)
@@ -16,6 +16,6 @@ type storage interface {
 	DeleteCertificate(string) error
 }
 
-func NewLocal() (storage, error) {
+func NewLocal() (Storage, error) {
 	return local.New()
 }
