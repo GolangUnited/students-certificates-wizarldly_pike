@@ -1,9 +1,7 @@
 package local
 
 import (
-	"errors"
 	"fmt"
-	"io/fs"
 	"os"
 	"path"
 )
@@ -55,14 +53,14 @@ func (l *localStorage) GetCertificate(fileName string) ([]byte, error) {
 	return getFile(fullPath)
 }
 
-func (l *localStorage) GetCertificatePath(fileName string) (string, error) {
-	fullPath := path.Join(l.certificatesDir, fileName)
+// func (l *localStorage) GetCertificatePath(fileName string) (string, error) {
+// 	fullPath := path.Join(l.certificatesDir, fileName)
 
-	if _, err := os.Stat(fullPath); errors.Is(err, fs.ErrNotExist) {
-		return "", err
-	}
-	return fullPath, nil
-}
+// 	if _, err := os.Stat(fullPath); errors.Is(err, fs.ErrNotExist) {
+// 		return "", err
+// 	}
+// 	return fullPath, nil
+// }
 
 func (l *localStorage) SaveTemplate(fileName string, data []byte) error {
 	fullPath := path.Join(l.templatesDir, fileName)

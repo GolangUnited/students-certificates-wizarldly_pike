@@ -148,13 +148,15 @@ func (c *certificateServer) GetCertificateLinkByID(ctx context.Context, req *cer
 		return nil, status.Errorf(codes.InvalidArgument, "%s: %q %v", "GetCertificateLinkByID", certificateId, err)
 	}
 
-	// Получение полного пути до файла сертификата в хранилище.
-	certificateFullPath, err := c.strgLoc.GetCertificatePath(certificateId + certificateFileExtension)
-	if err != nil {
-		return nil, status.Errorf(codes.FailedPrecondition, "%s: %q, %v", "GetCertificateLinkByID", certificateId, err)
-	}
+	// Получение линка на сертификат.
+	certificateLink := certificateId // Пока не реализовано получение линка передается имя сертификата
+	// certificateFullPath, err := c.strgLoc.GetCertificatePath(certificateId + certificateFileExtension)
+	// if err != nil {
+	// 	return nil, status.Errorf(codes.FailedPrecondition, "%s: %q, %v", "GetCertificateLinkByID", certificateId, err)
+	// }
 
-	resp := &certSPb.GetCertificateLinkByIDResp{Link: certificateFullPath}
+	resp := &certSPb.GetCertificateLinkByIDResp{Link: certificateLink}
+	// resp := &certSPb.GetCertificateLinkByIDResp{Link: certificateFullPath}
 	return resp, nil
 }
 
