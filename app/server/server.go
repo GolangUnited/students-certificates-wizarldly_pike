@@ -2,6 +2,9 @@ package server
 
 import (
 	"context"
+	"fmt"
+	"os"
+	"strings"
 
 	valid "github.com/go-ozzo/ozzo-validation/v4"
 	validIs "github.com/go-ozzo/ozzo-validation/v4/is"
@@ -21,7 +24,11 @@ var fileNameRule = []valid.Rule{
 	validIs.ASCII,
 }
 
-const certificateFileExtension = ".pdf"
+const (
+	envStorageType = "STORAGE" // ["local", "s3"] Хранение файлов в локальном хранилище или на s3.
+
+	certificateFileExtension = ".pdf"
+)
 
 type certificateServer struct {
 	certSPb.UnimplementedCertificateServer
@@ -32,8 +39,8 @@ type certificateServer struct {
 	// Конвертация сертификата в формат PDF.
 	pdfGen pdfgenerator.PdfGenerator
 
-	// Работа с локальным файловым хранилищем.
-	strgLoc storage.Storage
+	// Работа с файловым хранилищем.
+	strg storage.Storage
 
 	// Генерация QR кодов.
 	qrGen *qrgenerator.QrGenerator
@@ -45,7 +52,7 @@ func NewCertificateServer() (*certificateServer, error) {
 		return nil, err
 	}
 
-	strgLoc, err := storage.NewLocal()
+	strg, err := newStorage()
 	if err != nil {
 		return nil, err
 	}
@@ -53,10 +60,31 @@ func NewCertificateServer() (*certificateServer, error) {
 	server := &certificateServer{}
 	server.certGen = &certgenerator.CertGenerator{}
 	server.pdfGen = pdfGen
-	server.strgLoc = strgLoc
+	server.strg = strg
 	server.qrGen = &qrgenerator.QrGenerator{}
 
 	return server, nil
+}
+
+func newStorage() (storage.Storage, error) {
+	storageType := strings.ToLower(os.Getenv(envStorageType))
+
+	if storageType == "local" {
+		strg, err := storage.NewLocal()
+		if err != nil {
+			return nil, err
+		}
+		return strg, nil
+	}
+
+	if storageType == "s3" {
+		strg, err := storage.NewS3()
+		if err != nil {
+			return nil, err
+		}
+		return strg, nil
+	}
+	return nil, fmt.Errorf("environment variable:%s=%q, only [local, s3] values are allowed", envStorageType, storageType)
 }
 
 func (c *certificateServer) fillData(course *certSPb.CourseMessage, student *certSPb.StudentMessage) {
@@ -95,7 +123,7 @@ func (c *certificateServer) IssueCertificate(ctx context.Context, req *certSPb.I
 	c.certGen.SetQrCodeLink(qrCodeLinkPNG)
 
 	// Получение шабона из хранилища.
-	template, err := c.strgLoc.GetTemplate(templateName)
+	template, err := c.strg.GetTemplate(templateName)
 	if err != nil {
 		return nil, status.Errorf(codes.FailedPrecondition, "%s: %q %v", "IssueCertificate", templateName, err)
 	}
@@ -113,7 +141,7 @@ func (c *certificateServer) IssueCertificate(ctx context.Context, req *certSPb.I
 	}
 
 	// Сохранение сертификата в хранилище.
-	err = c.strgLoc.SaveCertificate(certificateId+certificateFileExtension, certificatePDF)
+	err = c.strg.SaveCertificate(certificateId+certificateFileExtension, certificatePDF)
 	if err != nil {
 		return nil, status.Errorf(codes.FailedPrecondition, "%s: %v", "IssueCertificate", err)
 	}
@@ -131,7 +159,7 @@ func (c *certificateServer) GetCertificateFileByID(ctx context.Context, req *cer
 	}
 
 	// Получение сертификата из хранилища.
-	certificate, err := c.strgLoc.GetCertificate(certificateId + certificateFileExtension)
+	certificate, err := c.strg.GetCertificate(certificateId + certificateFileExtension)
 	if err != nil {
 		return nil, status.Errorf(codes.FailedPrecondition, "%s: %q %v", "GetCertificateFileByID", certificateId, err)
 	}
@@ -150,10 +178,6 @@ func (c *certificateServer) GetCertificateLinkByID(ctx context.Context, req *cer
 
 	// Получение линка на сертификат.
 	certificateLink := certificateId // Пока не реализовано получение линка передается имя сертификата
-	// certificateFullPath, err := c.strgLoc.GetCertificatePath(certificateId + certificateFileExtension)
-	// if err != nil {
-	// 	return nil, status.Errorf(codes.FailedPrecondition, "%s: %q, %v", "GetCertificateLinkByID", certificateId, err)
-	// }
 
 	resp := &certSPb.GetCertificateLinkByIDResp{Link: certificateLink}
 	// resp := &certSPb.GetCertificateLinkByIDResp{Link: certificateFullPath}
@@ -176,7 +200,7 @@ func (c *certificateServer) AddTemplate(ctx context.Context, req *certSPb.AddTem
 	}
 
 	// Сохранение шаблона в хранилище.
-	err = c.strgLoc.SaveTemplate(templateName, templateByte)
+	err = c.strg.SaveTemplate(templateName, templateByte)
 	if err != nil {
 		return nil, status.Errorf(codes.FailedPrecondition, "%s: %q %v", "AddTemplate", templateName, err)
 	}
@@ -194,7 +218,7 @@ func (c *certificateServer) DeleteTemplate(ctx context.Context, req *certSPb.Del
 	}
 
 	// Удаление шаблона из хранилища.
-	err = c.strgLoc.DeleteTemplate(templateName)
+	err = c.strg.DeleteTemplate(templateName)
 	if err != nil {
 		return nil, status.Errorf(codes.FailedPrecondition, "%s: %q %v", "DelTemplate", templateName, err)
 	}

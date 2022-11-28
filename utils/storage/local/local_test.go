@@ -138,32 +138,3 @@ func TestCertificatesOperations(t *testing.T) {
 		t.Error(err)
 	}
 }
-
-// func TestGetCertificatePath(t *testing.T) {
-// 	testData, err := generateTestData(currentWorkDir, currentWorkDir)
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-
-// 	testFileName := "testDataCertificates.tmp"
-// 	testBytes := []byte("Test Certificates Operations")
-// 	err = testData.SaveCertificate(testFileName, testBytes)
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-
-// 	actualPath, err := testData.GetCertificatePath(testFileName)
-// 	if err != nil {
-// 		t.Error(err)
-// 	}
-// 	expectedPath := path.Join(currentWorkDir, testFileName)
-
-// 	if actualPath != expectedPath {
-// 		t.Errorf("expect path:%q, actual path:%q", expectedPath, actualPath)
-// 	}
-
-// 	err = testData.DeleteCertificate(testFileName)
-// 	if err != nil {
-// 		t.Error(err)
-// 	}
-// }

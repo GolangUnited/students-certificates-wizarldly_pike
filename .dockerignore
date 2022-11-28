@@ -10,3 +10,4 @@ temp
 env.list
 Dockerfile
 protoc_options_generate.txt
+*.env

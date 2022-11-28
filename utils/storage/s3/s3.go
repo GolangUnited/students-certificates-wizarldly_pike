@@ -8,6 +8,7 @@ import (
 	"io"
 	"os"
 	"path"
+	"path/filepath"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -23,20 +24,27 @@ const (
 	defaultBucketRegion = "eu-central-1"
 )
 
+// Оптимизация скорости. Структура для сохранения в памяти последнего запрошенного шаблона, возращает при повторных запросах.
+type lastRequestTemplate struct {
+	name string
+	data []byte
+}
+
 type s3Storage struct {
 	templatesDir    string
 	certificatesDir string
 	s3BucketName    string
 	s3Client        *s3.Client
+	lastTemplate    lastRequestTemplate
 }
 
 func New() (*s3Storage, error) {
-	templatesDir := os.Getenv(envTemplatesDir)
+	templatesDir := filepath.Base(os.Getenv(envTemplatesDir))
 	if templatesDir == "" {
 		return nil, fmt.Errorf("environment variable %q not set", envTemplatesDir)
 	}
 
-	certificatesDir := os.Getenv(envCertificatesDir)
+	certificatesDir := filepath.Base(os.Getenv(envCertificatesDir))
 	if certificatesDir == "" {
 		return nil, fmt.Errorf("environment variable %q not set", envCertificatesDir)
 	}
@@ -56,6 +64,7 @@ func New() (*s3Storage, error) {
 	s3s.certificatesDir = certificatesDir
 	s3s.s3BucketName = s3BucketName
 	s3s.s3Client = s3Client
+	s3s.lastTemplate = lastRequestTemplate{}
 
 	return s3s, nil
 }
@@ -104,9 +113,22 @@ func finBucketRegion(bucket string) (string, error) {
 }
 
 func (s *s3Storage) GetTemplate(fileName string) ([]byte, error) {
-	fullPath := path.Join(s.templatesDir, fileName)
-	return s.getFile(fullPath)
+	// Возвращаем из памяти если уже запрашивали.
+	if s.lastTemplate.name == fileName {
+		return s.lastTemplate.data, nil
+	}
 
+	fullPath := path.Join(s.templatesDir, fileName)
+	data, err := s.getFile(fullPath)
+	if err != nil {
+		return nil, err
+	}
+
+	// Обновляем в памяти последний запрошенный.
+	s.lastTemplate.name = fileName
+	s.lastTemplate.data = data
+
+	return data, nil
 }
 
 func (s *s3Storage) GetCertificate(fileName string) ([]byte, error) {
@@ -114,19 +136,19 @@ func (s *s3Storage) GetCertificate(fileName string) ([]byte, error) {
 	return s.getFile(fullPath)
 }
 
-// func (s *s3Storage) GetCertificatePath(fileName string) (string, error) {
-// 	fullPath := path.Join(s.certificatesDir, fileName)
-
-// 	if _, err := os.Stat(fullPath); errors.Is(err, fs.ErrNotExist) {
-// 		return "", err
-// 	}
-// 	return fullPath, nil
-// }
-
 func (s *s3Storage) SaveTemplate(fileName string, data []byte) error {
 	fullPath := path.Join(s.templatesDir, fileName)
-	return s.saveFile(fullPath, data)
+	err := s.saveFile(fullPath, data)
+	if err != nil {
+		return err
+	}
 
+	// Обновляем в памяти последний сохраненный при обновлении.
+	if s.lastTemplate.name == fileName {
+		s.lastTemplate.data = data
+	}
+
+	return nil
 }
 
 func (s *s3Storage) SaveCertificate(fileName string, data []byte) error {
@@ -135,6 +157,12 @@ func (s *s3Storage) SaveCertificate(fileName string, data []byte) error {
 }
 
 func (s *s3Storage) DeleteTemplate(fileName string) error {
+	// Очищаем в памяти последний сохраненный при его удалении.
+	if s.lastTemplate.name == fileName {
+		s.lastTemplate.name = ""
+		s.lastTemplate.data = nil
+	}
+
 	fullPath := path.Join(s.templatesDir, fileName)
 	return s.deleteFile(fullPath)
 
