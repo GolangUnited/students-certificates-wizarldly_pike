@@ -4,13 +4,15 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"github.com/minio/minio-go/v7"
-	"github.com/minio/minio-go/v7/pkg/credentials"
-	"gus_certificates/utils/storage"
 	"io"
 	"log"
 	"net/url"
 	"time"
+
+	"github.com/minio/minio-go/v7"
+	"github.com/minio/minio-go/v7/pkg/credentials"
+
+	"gus_certificates/utils/storage"
 )
 
 type minioStorage struct {
@@ -39,7 +41,7 @@ func (m minioStorage) GetTemplate(templateName string) ([]byte, error) {
 
 	obj, err := m.client.GetObject(ctx, bucketName, objectName, minio.GetObjectOptions{})
 	if err != nil {
-		return nil, fmt.Errorf("Template not getted!")
+		return nil, fmt.Errorf("Template not received!")
 	}
 
 	log.Printf("Successfully downladed %s", objectName)
@@ -66,7 +68,7 @@ func (m minioStorage) GetCertificate(certificateName string) ([]byte, error) {
 
 	obj, err := m.client.GetObject(ctx, bucketName, objectName, minio.GetObjectOptions{})
 	if err != nil {
-		return nil, fmt.Errorf("Certificate not getted!")
+		return nil, fmt.Errorf("Certificate not received!")
 	}
 
 	log.Printf("Successfully downladed %s", objectName)
