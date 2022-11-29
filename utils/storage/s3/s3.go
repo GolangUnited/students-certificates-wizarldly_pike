@@ -3,25 +3,23 @@ package s3
 import (
 	"bytes"
 	"context"
-	"errors"
 	"fmt"
 	"io"
 	"os"
 	"path"
 	"path/filepath"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/config"
-	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
-	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/minio/minio-go/v7"
+	"github.com/minio/minio-go/v7/pkg/credentials"
 )
 
 const (
 	envTemplatesDir    = "TEMPLATES_DIR"
 	envCertificatesDir = "CERTIFICATES_DIR"
 	envS3BucketName    = "S3_BUCKET_NAME"
-
-	defaultBucketRegion = "eu-central-1"
+	envS3Endpoint      = "S3_ENDPOINT"
+	envAccessKeyID     = "ACCESS_KEY_ID"
+	envSecretAccessKey = "SECRET_ACCESS_KEY"
 )
 
 // Оптимизация скорости. Структура для сохранения в памяти последнего запрошенного шаблона, возращает при повторных запросах.
@@ -34,7 +32,7 @@ type s3Storage struct {
 	templatesDir    string
 	certificatesDir string
 	s3BucketName    string
-	s3Client        *s3.Client
+	s3Client        *minio.Client
 	lastTemplate    lastRequestTemplate
 }
 
@@ -69,47 +67,42 @@ func New() (*s3Storage, error) {
 	return s3s, nil
 }
 
-func newS3Client(bucket string) (*s3.Client, error) {
-	region, err := finBucketRegion(bucket)
+func newS3Client(bucket string) (*minio.Client, error) {
+
+	s3Endpoint := os.Getenv(envS3Endpoint)
+	if s3Endpoint == "" {
+		return nil, fmt.Errorf("environment variable %q not set", envS3Endpoint)
+	}
+
+	accessKeyID := os.Getenv(envAccessKeyID)
+	if accessKeyID == "" {
+		return nil, fmt.Errorf("environment variable %q not set", envAccessKeyID)
+	}
+
+	secretAccessKey := os.Getenv(envSecretAccessKey)
+	if secretAccessKey == "" {
+		return nil, fmt.Errorf("environment variable %q not set", envSecretAccessKey)
+	}
+
+	useSSL := true
+	options := &minio.Options{Creds: credentials.NewStaticV4(accessKeyID, secretAccessKey, ""), Secure: useSSL}
+	client, err := minio.New(s3Endpoint, options)
 	if err != nil {
 		return nil, err
 	}
 
-	ctx := context.TODO()
-
-	cfg, err := config.LoadDefaultConfig(ctx, config.WithRegion(region))
+	// Проверяем доступ к Bucket.
+	ctx := context.Background()
+	exist, err := client.BucketExists(ctx, bucket)
 	if err != nil {
 		return nil, err
 	}
 
-	client := s3.NewFromConfig(cfg)
-
-	// Проверка доступности bucket.
-	_, err = client.HeadBucket(ctx, &s3.HeadBucketInput{Bucket: aws.String(bucket)})
-	if err != nil {
-		return nil, err
+	if !exist {
+		return nil, fmt.Errorf("bucket:%q not exist", bucket)
 	}
+
 	return client, nil
-}
-
-func finBucketRegion(bucket string) (string, error) {
-	ctx := context.TODO()
-
-	cfg, err := config.LoadDefaultConfig(ctx, config.WithRegion(defaultBucketRegion))
-	if err != nil {
-		return "", err
-	}
-
-	// Поиск региона содержащий наш bucket.
-	region, err := manager.GetBucketRegion(ctx, s3.NewFromConfig(cfg), bucket)
-	if err != nil {
-		var bnf manager.BucketNotFound
-		if errors.As(err, &bnf) {
-			return "", fmt.Errorf("unable to find bucket:%q Region", bucket)
-		}
-		return "", err
-	}
-	return region, nil
 }
 
 func (s *s3Storage) GetTemplate(fileName string) ([]byte, error) {
@@ -174,25 +167,25 @@ func (s *s3Storage) DeleteCertificate(fileName string) error {
 }
 
 func (s *s3Storage) getFile(fullPath string) ([]byte, error) {
-	ctx := context.TODO()
-	obj := &s3.GetObjectInput{Bucket: aws.String(s.s3BucketName), Key: aws.String(fullPath)}
-	resp, err := s.s3Client.GetObject(ctx, obj)
+	ctx := context.Background()
+
+	obj, err := s.s3Client.GetObject(ctx, s.s3BucketName, fullPath, minio.GetObjectOptions{})
 	if err != nil {
 		return nil, err
 	}
 
-	defer resp.Body.Close()
-	data, err := io.ReadAll(resp.Body)
+	defer obj.Close()
+	data, err := io.ReadAll(obj)
 	if err != nil {
 		return nil, err
 	}
+
 	return data, nil
 }
 
 func (s *s3Storage) saveFile(fullPath string, data []byte) error {
-	ctx := context.TODO()
-	obj := &s3.PutObjectInput{Bucket: aws.String(s.s3BucketName), Key: aws.String(fullPath), Body: bytes.NewBuffer(data)}
-	_, err := s.s3Client.PutObject(ctx, obj)
+	ctx := context.Background()
+	_, err := s.s3Client.PutObject(ctx, s.s3BucketName, fullPath, bytes.NewReader(data), int64(len(data)), minio.PutObjectOptions{})
 	if err != nil {
 		return err
 	}
@@ -200,13 +193,13 @@ func (s *s3Storage) saveFile(fullPath string, data []byte) error {
 }
 
 func (s *s3Storage) deleteFile(fullPath string) error {
+	// Проверяем существует/доступен ли файл.
 	if err := s.checkFile(fullPath); err != nil {
 		return err
 	}
 
-	ctx := context.TODO()
-	obj := &s3.DeleteObjectInput{Bucket: aws.String(s.s3BucketName), Key: aws.String(fullPath)}
-	_, err := s.s3Client.DeleteObject(ctx, obj)
+	ctx := context.Background()
+	err := s.s3Client.RemoveObject(ctx, s.s3BucketName, fullPath, minio.RemoveObjectOptions{})
 	if err != nil {
 		return err
 	}
@@ -214,9 +207,8 @@ func (s *s3Storage) deleteFile(fullPath string) error {
 }
 
 func (s *s3Storage) checkFile(fullPath string) error {
-	ctx := context.TODO()
-	obj := &s3.HeadObjectInput{Bucket: aws.String(s.s3BucketName), Key: aws.String(fullPath)}
-	_, err := s.s3Client.HeadObject(ctx, obj)
+	ctx := context.Background()
+	_, err := s.s3Client.StatObject(ctx, s.s3BucketName, fullPath, minio.StatObjectOptions{})
 	if err != nil {
 		return err
 	}
