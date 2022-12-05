@@ -12,7 +12,7 @@ import (
 	"google.golang.org/grpc/status"
 
 	"gus_certificates/app/certgenerator"
-	certSPb "gus_certificates/protobuf/transport/certificate"
+	certSPb "gus_certificates/transport/protobuf/certificate"
 	"gus_certificates/utils/pdfgenerator"
 	"gus_certificates/utils/qrgenerator"
 	"gus_certificates/utils/storage"

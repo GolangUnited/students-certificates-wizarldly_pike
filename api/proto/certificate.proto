@@ -2,16 +2,38 @@ syntax = "proto3";
 
 package certificate;
 
-option go_package = "gus_certificates/protobuf/transport/certificate;certificate";
+option go_package = "gus_certificates/transport/protobuf/certificate;certificate";
 
-import "google/protobuf/empty.proto";
+import "google/api/annotations.proto";
 
 service Certificate {
-    rpc IssueCertificate(IssueCertificateReq) returns (IssueCertificateResp);
-    rpc GetCertificateFileByID(GetCertificateFileByIDReq) returns (GetCertificateFileByIDResp);
-    rpc GetCertificateLinkByID(GetCertificateLinkByIDReq) returns (GetCertificateLinkByIDResp);
-    rpc AddTemplate(AddTemplateReq) returns (AddTemplateResp);
-    rpc DeleteTemplate(DeleteTemplateReq) returns (DeleteTemplateResp);
+    rpc IssueCertificate(IssueCertificateReq) returns (IssueCertificateResp){
+        option (google.api.http) = {
+            post: "/certificate/issue"
+            body: "*"
+          };
+    }
+    rpc GetCertificateFileByID(GetCertificateFileByIDReq) returns (GetCertificateFileByIDResp){
+        option (google.api.http) = {
+            get: "/certificate/file/{id}"
+          };
+    }
+    rpc GetCertificateLinkByID(GetCertificateLinkByIDReq) returns (GetCertificateLinkByIDResp){
+        option (google.api.http) = {
+            get: "/certificate/link/{id}"
+          };
+    }
+    rpc AddTemplate(AddTemplateReq) returns (AddTemplateResp){
+        option (google.api.http) = {
+            post: "/certificate/template"
+            body: "*"
+          };
+    }
+    rpc DeleteTemplate(DeleteTemplateReq) returns (DeleteTemplateResp){
+        option (google.api.http) = {
+            delete: "/certificate/template/{template_name}"
+          };
+    }
 }
 
 message IssueCertificateReq {

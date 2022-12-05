@@ -3,11 +3,13 @@
 .gitignore
 .idea
 .vscode
-third_party/*
-*.pb.go
+third_party
 temp
 *.md
 env.list
-Dockerfile
-protoc_options_generate.txt
 *.env
+Dockerfile
+Dockerfile.*
+.dockerignore
+documents
+protoc_options_generate.txt

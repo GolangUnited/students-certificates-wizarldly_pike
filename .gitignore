@@ -1,5 +1,4 @@
 .idea
 .vscode
-third_party/*
-*.pb.go
+third_party
 *.env

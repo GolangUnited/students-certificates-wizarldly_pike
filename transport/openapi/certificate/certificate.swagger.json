@@ -1,0 +1,313 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "certificate.proto",
+    "version": "version not set"
+  },
+  "tags": [
+    {
+      "name": "Certificate"
+    }
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/certificate/file/{id}": {
+      "get": {
+        "operationId": "Certificate_GetCertificateFileByID",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/certificateGetCertificateFileByIDResp"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Certificate"
+        ]
+      }
+    },
+    "/certificate/issue": {
+      "post": {
+        "operationId": "Certificate_IssueCertificate",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/certificateIssueCertificateResp"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/certificateIssueCertificateReq"
+            }
+          }
+        ],
+        "tags": [
+          "Certificate"
+        ]
+      }
+    },
+    "/certificate/link/{id}": {
+      "get": {
+        "operationId": "Certificate_GetCertificateLinkByID",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/certificateGetCertificateLinkByIDResp"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Certificate"
+        ]
+      }
+    },
+    "/certificate/template": {
+      "post": {
+        "operationId": "Certificate_AddTemplate",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/certificateAddTemplateResp"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/certificateAddTemplateReq"
+            }
+          }
+        ],
+        "tags": [
+          "Certificate"
+        ]
+      }
+    },
+    "/certificate/template/{templateName}": {
+      "delete": {
+        "operationId": "Certificate_DeleteTemplate",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/certificateDeleteTemplateResp"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "templateName",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Certificate"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "certificateAddTemplateReq": {
+      "type": "object",
+      "properties": {
+        "templateName": {
+          "type": "string"
+        },
+        "template": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "certificateAddTemplateResp": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "$ref": "#/definitions/certificateStatus"
+        }
+      }
+    },
+    "certificateCourseMessage": {
+      "type": "object",
+      "properties": {
+        "courseName": {
+          "type": "string"
+        },
+        "courseType": {
+          "type": "string"
+        },
+        "hours": {
+          "type": "string"
+        },
+        "date": {
+          "type": "string"
+        },
+        "mentors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "certificateDeleteTemplateResp": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "$ref": "#/definitions/certificateStatus"
+        }
+      }
+    },
+    "certificateGetCertificateFileByIDResp": {
+      "type": "object",
+      "properties": {
+        "certificate": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "certificateGetCertificateLinkByIDResp": {
+      "type": "object",
+      "properties": {
+        "link": {
+          "type": "string"
+        }
+      }
+    },
+    "certificateIssueCertificateReq": {
+      "type": "object",
+      "properties": {
+        "student": {
+          "$ref": "#/definitions/certificateStudentMessage"
+        },
+        "templateName": {
+          "type": "string"
+        },
+        "course": {
+          "$ref": "#/definitions/certificateCourseMessage"
+        }
+      }
+    },
+    "certificateIssueCertificateResp": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        }
+      }
+    },
+    "certificateStatus": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "certificateStudentMessage": {
+      "type": "object",
+      "properties": {
+        "firstname": {
+          "type": "string"
+        },
+        "lastname": {
+          "type": "string"
+        }
+      }
+    },
+    "googlerpcStatus": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": {}
+    }
+  }
+}
