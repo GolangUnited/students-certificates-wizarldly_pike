@@ -27,7 +27,9 @@ func (h *htmltopdf) RenderHtmlToPdf(htmlBytes []byte) ([]byte, error) {
 	h.pdfgenerator.Buffer().Reset()
 
 	bytesReader := bytes.NewReader(htmlBytes)
-	h.pdfgenerator.AddPage(wkhtmltopdf.NewPageReader(bytesReader))
+	pageReader := wkhtmltopdf.NewPageReader(bytesReader)
+	pageReader.Encoding.Set("utf-8")
+	h.pdfgenerator.AddPage(pageReader)
 	err := h.pdfgenerator.Create()
 	if err != nil {
 		return nil, err
