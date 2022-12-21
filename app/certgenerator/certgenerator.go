@@ -3,7 +3,6 @@ package certgenerator
 import (
 	"bytes"
 	"crypto/md5"
-	"encoding/base64"
 	"fmt"
 	"html/template"
 	"strings"
@@ -15,18 +14,24 @@ var shortTextFieldRule = []valid.Rule{valid.Required, valid.RuneLength(1, 50)}
 var longTextFieldRule = []valid.Rule{valid.Required, valid.RuneLength(1, 250)}
 
 type CertGenerator struct {
-	data certData
+	data CertData
 }
 
-type certData struct {
-	CourseName       string
-	CourseType       string
-	CourseHours      string
-	CourseDate       string
-	CourseMentors    string
-	StudentFirstname string
-	StudentLastname  string
-	QrCodeLink       template.URL
+func New(data CertData) *CertGenerator {
+	return &CertGenerator{
+		data,
+	}
+}
+
+type CertData struct {
+	CourseName       string `json:"course_name"`
+	CourseType       string `json:"course_type"`
+	CourseHours      string `json:"course_hours"`
+	CourseDate       string `json:"course_date"`
+	CourseMentors    string `json:"course_mentors"`
+	StudentFirstname string `json:"student_firstname"`
+	StudentLastname  string `json:"student_lastname"`
+	//QrCodeLink       template.URL
 }
 
 func (c *CertGenerator) ValidateData() error {
@@ -103,9 +108,11 @@ func (c *CertGenerator) SetStudentLastname(studentLastname string) {
 	c.data.StudentLastname = studentLastname
 }
 
+/*
 func (c *CertGenerator) SetQrCodeLink(imgData []byte) {
 	htmlTagImagePngBase64 := "data:image/png;base64,"
 	imgBase64String := base64.StdEncoding.EncodeToString(imgData)
 
 	c.data.QrCodeLink = template.URL(fmt.Sprintf("%s%s", htmlTagImagePngBase64, imgBase64String))
 }
+*/
