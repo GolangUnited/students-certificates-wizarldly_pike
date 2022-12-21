@@ -6,7 +6,9 @@ require (
 	github.com/SebastiaanKlippert/go-wkhtmltopdf v1.7.2
 	github.com/go-ozzo/ozzo-validation/v4 v4.3.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.14.0
+	github.com/joho/godotenv v1.4.0
 	github.com/minio/minio-go/v7 v7.0.44
+	github.com/rabbitmq/amqp091-go v1.5.0
 	google.golang.org/grpc v1.50.1
 	google.golang.org/protobuf v1.28.1
 )
